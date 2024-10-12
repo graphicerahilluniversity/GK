@@ -1,28 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A-Frame AR</title>
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/1.7.2/aframe/build/aframe-ar.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Location Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        /* Style for the dropdown menu */
+        .dropdown {
+            background-color: #4D3CBE; /* Dropdown background color */
+            padding: 10px;
+            color: white; /* Text color */
+            text-align: center;
+        }
+        select {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #map {
+            height: calc(100vh - 50px); /* Make the map responsive to full height minus dropdown */
+            width: 100%;   /* Set the width of the map */
+        }
+        .video-popup {
+            width: 300px; /* Width of the video popup */
+            height: 200px; /* Height of the video popup */
+        }
+        .popup-content {
+            font-size: 14px; /* Font size for the popup content */
+        }
+    </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
-  <!-- A-Frame Scene -->
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-    
-    <!-- Make sure the marker file is correctly named and in the same directory -->
-    <a-marker preset="custom" type="pattern" url="marker.patt">
-      <a-box position="0 0.5 0" material="color: red;"></a-box>
-    </a-marker>
+<body>
 
-    <a-entity camera></a-entity>
-  </a-scene>
+    <div class="dropdown">
+        <label for="locations">Select Location:</label>
+        <select id="locations" onchange="locationChanged()">
+            <option value="">--Select a location--</option>
+            <option value="29.375376,79.5282716">Nanda Devi Hostel</option>
+            <option value="29.4000,79.5200">Old Boys Hostel</option>
+            <option value="29.4100,79.5300">Kaler Hostel</option> <!-- Additional location -->
+        </select>
+    </div>
 
-  <script>
-    window.addEventListener('DOMContentLoaded', (event) => {
-      console.log("Page Loaded, AR.js Initialized");
-    });
-  </script>
+    <h1 style="text-align:center; margin-top:10px;">Campus Navi APP</h1>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map centered on the college location without attribution control
+        const map = L.map('map', { attributionControl: false }).setView([29.375376, 79.5282716], 13); // Default coordinates
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: ''
+        }).addTo(map);
+
+        // Define locations with coordinates, descriptions, and video links
+        const locations = {
+            '29.375376,79.5282716': {
+                name: 'Nanda Devi Hostel',
+                description: 'This is Nanda Devi Hostel, a comfortable place for students.',
+                videoUrl: '10065.mp4'
+            },
+            '29.4000,79.5200': {
+                name: 'Old Boys Hostel',
+                description: 'This is the Old Boys Hostel, known for its rich history.',
+                videoUrl: 'old_boys_hostel.mp4' // Update with the path to your video file
+            },
+            '29.4100,79.5300': {
+                name: 'Kaler Hostel',
+                description: 'Kaler Hostel offers excellent facilities and a vibrant community.',
+                videoUrl: 'kaler_hostel.mp4' // Update with the path to your video file
+            }
+        };
+
+        // Function to handle location change from dropdown
+        function locationChanged() {
+            const selectedValue = document.getElementById("locations").value;
+            if (selectedValue) {
+                const [lat, lng] = selectedValue.split(',').map(Number);
+                map.setView([lat, lng], 13); // Set the map view to the selected coordinates
+                addMarker(selectedValue); // Add the marker for the selected location
+            }
+        }
+
+        // Function to add a marker with a pop-up for a given location
+        function addMarker(locationKey) {
+            const { name, description, videoUrl } = locations[locationKey];
+            const marker = L.marker(locationKey.split(',').map(Number)).addTo(map)
+                .on('click', function() {
+                    this.bindPopup(`
+                        <div class="popup-content">
+                            <h3>${name}</h3>
+                            <p><strong>Location:</strong> ${description}</p>
+                            <video class="video-popup" oncontextmenu="return false;" autoplay muted loop>
+                                <source src="${videoUrl}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    `).openPopup();
+                });
+            marker.fire('click'); // Simulate a click on the marker to show the popup
+        }
+    </script>
 </body>
 </html>
