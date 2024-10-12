@@ -10,13 +10,11 @@
 <body style="margin: 0; overflow: hidden;">
   <!-- A-Frame Scene -->
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-
-    <!-- Ensure the correct path for marker1.patt and marker2.patt -->
+    
+    <!-- Make sure the marker file is correctly named and in the same directory -->
     <a-marker preset="custom" type="pattern" url="marker.patt">
       <a-box position="0 0.5 0" material="color: red;"></a-box>
     </a-marker>
-
-
 
     <a-entity camera></a-entity>
   </a-scene>
